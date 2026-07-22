@@ -1,8 +1,8 @@
 # CPU-Simulator using Windows Forms
 
-This project provides a Windows Forms application that demonstrates common CPU scheduling algorithms through an interactive graphical interface. Each algorithm prompts for basic input and displays the resulting waiting or turnaround times using message boxes and on-screen tables.
+This repository is a fork of the original CPU Scheduler starter project. It provides a Windows Forms application that demonstrates common CPU scheduling algorithms through an interactive graphical interface. Each algorithm prompts for basic input and displays the resulting waiting or turnaround times using message boxes and on-screen tables.
 
-**Fork maintained by Chris Regan** - Original creator: Francis (used with permission)
+This fork is maintained here: https://github.com/xSeabass/CS-3502-CPU-Sim-Project-StartingPoint (public fork). The original upstream repository is: https://github.com/iAmGiG/CS-3502-CPU-Sim-Project-StartingPoint
 
 ## Project status
 
@@ -27,10 +27,10 @@ Additional algorithms can easily be added by extending `Algorithms.cs`.
 
 ### Using Visual Studio
 
-1. Clone the repository:
+1. Clone this repository (your fork):
 
    ```bash
-   git clone git@github.com:iAmGiG/CS-3502-CPU-Sim-Project-StartingPoint.git
+   git clone git@github.com:xSeabass/CS-3502-CPU-Sim-Project-StartingPoint.git
    ```
 
 2. Open `CpuScheduler.sln` in Visual Studio 2022
@@ -82,6 +82,52 @@ dotnet build
 dotnet run --project CpuScheduler/CpuScheduler.csproj
 ```
 
+## SRTF and HRRN — Build & Run (focused)
+
+This section explains only the steps needed to build the project and exercise the two algorithms added for the assignment: SRTF (Shortest Remaining Time First) and HRRN (Highest Response Ratio Next).
+
+1. Open a PowerShell terminal at the repository root:
+   cd "C:\Users\CheetahTheThird\Downloads\CS-3502-CPU-Sim-Project-StartingPoint"
+
+2. Build the project:
+   dotnet build CpuScheduler/CpuScheduler.csproj -c Debug
+
+3. Run the WinForms application from the CLI (or run from Visual Studio):
+   dotnet run --project CpuScheduler/CpuScheduler.csproj
+
+4. In the application UI:
+   - Open the "Scheduler" tab.
+   - In the "Process Count" textbox (control name: txtProcess) enter a positive integer (e.g., 3).
+   - Click the "SRTF" button to run the Shortest Remaining Time First simulation. The app will prompt for arrival and burst times.
+   - Click the "HRRN" button to run the Highest Response Ratio Next simulation. The app will prompt for arrival and burst times.
+
+5. Results appear in the "Results" tab. Use the Export Results button to save CSV output.
+
+Notes on automation
+- No unit tests were found in the repository. I ran the test discovery for the CpuScheduler project and there are no test projects. If you would like automated tests, I can add an xUnit project and test cases for SRTF/HRRN.
+## Tools (analysis and tests)
+
+We provide optional tools for reproducing performance analysis and running unit tests. These live under the tools/ folder and are intended for instructors or for you to re-run experiments.
+
+1. Run the simulator runner (generates CSVs and PNG charts):
+
+   dotnet build tools/SimulatorRunner/SimulatorRunner.csproj -c Release
+   dotnet run --project tools/SimulatorRunner/SimulatorRunner.csproj -c Release
+
+	  Output will be produced in the outputs/simulation_output/ directory: per-run CSVs, aggregated summary CSVs, PNG charts, and outputs/simulation_output/report_data.tex.
+
+2. Run unit tests (xUnit):
+
+   dotnet test tools/UnitTests/UnitTests.csproj
+
+Notes:
+- The tools reference the CpuScheduler project, so they target net8.0-windows. Ensure you run them on Windows with the .NET 8 SDK installed.
+- Generated outputs and archives are organized under the outputs/ folder:
+  - outputs/simulation_output/  (CSV and PNG chart outputs and report_data.tex)
+  - outputs/archives/          (submission ZIPs created by the packaging script)
+- Documentation and report source live in docs/ (report.tex, presentation RTF, summaries).
+- The packaging script is at tools/scripts/create_package.ps1 and will create submission_ready/ and optional ZIP archives.
+- Keep tools/ if you want reproducible experiments and an automated verification suite. Remove or exclude tools/ for a minimal submission package.
 ## Usage
 
 1. Enter the desired number of processes
