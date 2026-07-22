@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CpuScheduler
 {
@@ -422,6 +424,228 @@ namespace CpuScheduler
 
         // TODO: Add new scheduling algorithms below. Use the above methods as
         // examples when expanding functionality.
-    }
+        // Shortest Remaining Time First (SRTF) - Preemptive
+        /// <summary>
+        /// Executes the Shortest Remaining Time First (SRTF) scheduling algorithm.
+        /// </summary>
+        /// <param name="processCountInput">The number of processes to schedule.</param>
+       public static void RunSRTF(string processCountInput, CpuSchedulerForm targetForm)
+        {
+            if (!int.TryParse(processCountInput, out int processCount) || processCount <= 0)
+            {
+                MessageBox.Show("Invalid number of processes", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            double[] arrivalTimes = new double[processCount];
+            double[] burstTimes = new double[processCount];
+            double[] remainingTimes = new double[processCount];
+            int[] startTimes = new int[processCount];
+            bool[] started = new bool[processCount];
+
+            DialogResult result = MessageBox.Show(
+                "Shortest Remaining Time First (SRTF) Scheduling",
+                string.Empty,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information);
+
+            if (result == DialogResult.Yes)
+            {
+                for (int i = 0; i < processCount; i++)
+                {
+                    string arrivalInput = Microsoft.VisualBasic.Interaction.InputBox(
+                        "Enter arrival time: ", "Arrival time for P" + (i + 1), string.Empty, -1, -1);
+                    if (!double.TryParse(arrivalInput, out arrivalTimes[i]) || arrivalTimes[i] < 0)
+                    {
+                        MessageBox.Show("Invalid arrival time", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    string burstInput = Microsoft.VisualBasic.Interaction.InputBox(
+                        "Enter burst time: ", "Burst time for P" + (i + 1), string.Empty, -1, -1);
+                    if (!double.TryParse(burstInput, out burstTimes[i]) || burstTimes[i] < 0)
+                    {
+                        MessageBox.Show("Invalid burst time", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    remainingTimes[i] = burstTimes[i];
+                    startTimes[i] = -1;
+                    started[i] = false;
+                }
+
+                List<CpuSchedulerForm.SchedulingResult> resultsList = new List<CpuSchedulerForm.SchedulingResult>();
+                int currentTime = 0;
+                int completed = 0;
+
+                while (completed < processCount)
+                {
+                    int shortestIndex = -1;
+                    double minRemaining = double.MaxValue;
+
+                    for (int i = 0; i < processCount; i++)
+                    {
+                        if (arrivalTimes[i] <= currentTime && remainingTimes[i] > 0 && remainingTimes[i] < minRemaining)
+                        {
+                            minRemaining = remainingTimes[i];
+                            shortestIndex = i;
+                        }
+                    }
+
+                    if (shortestIndex == -1)
+                    {
+                        currentTime++;
+                        continue;
+                    }
+
+                    if (!started[shortestIndex])
+                    {
+                        startTimes[shortestIndex] = currentTime;
+                        started[shortestIndex] = true;
+                    }
+
+                    remainingTimes[shortestIndex]--;
+                    currentTime++;
+
+                    if (remainingTimes[shortestIndex] == 0)
+                    {
+                        completed++;
+                        int finishTime = currentTime;
+                        int turnaround = finishTime - (int)arrivalTimes[shortestIndex];
+                        int waiting = turnaround - (int)burstTimes[shortestIndex];
+
+                        resultsList.Add(new CpuSchedulerForm.SchedulingResult
+                        {
+                            ProcessID = "P" + (shortestIndex + 1),
+                            ArrivalTime = (int)arrivalTimes[shortestIndex],
+                            BurstTime = (int)burstTimes[shortestIndex],
+                            StartTime = startTimes[shortestIndex],
+                            FinishTime = finishTime,
+                            WaitingTime = waiting,
+                            TurnaroundTime = turnaround
+                        });
+                    }
+                }
+
+                // Send data straight back into the main form visual tracking list view
+                // Uses Reflection to access the private method on your form safely on any OS
+                var method = targetForm.GetType().GetMethod("DisplaySchedulingResults", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (method != null)
+                {
+                    method.Invoke(targetForm, new object[] { resultsList.OrderBy(r => r.ProcessID).ToList(), "SRTF (Preemptive)" });
+                }
+            }
+        }
+
+       
+        /// <summary>
+        /// Executes the Highest Response Ratio Next (HRRN) scheduling algorithm.
+        /// </summary>
+        /// <param name="processCountInput">The number of processes to schedule.</param>
+        /// <summary>
+        /// Executes Non-Preemptive Highest Response Ratio Next (HRRN) Scheduling.
+        /// </summary>
+        public static void RunHRRN(string processCountInput, CpuSchedulerForm targetForm)
+        {
+            if (!int.TryParse(processCountInput, out int processCount) || processCount <= 0)
+            {
+                MessageBox.Show("Invalid number of processes", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            double[] arrivalTimes = new double[processCount];
+            double[] burstTimes = new double[processCount];
+            bool[] isCompleted = new bool[processCount];
+
+            DialogResult result = MessageBox.Show(
+                "Highest Response Ratio Next (HRRN) Scheduling",
+                string.Empty,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information);
+
+            if (result == DialogResult.Yes)
+            {
+                for (int i = 0; i < processCount; i++)
+                {
+                    string arrivalInput = Microsoft.VisualBasic.Interaction.InputBox(
+                        "Enter arrival time: ", "Arrival time for P" + (i + 1), string.Empty, -1, -1);
+                    if (!double.TryParse(arrivalInput, out arrivalTimes[i]) || arrivalTimes[i] < 0)
+                    {
+                        MessageBox.Show("Invalid arrival time", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    string burstInput = Microsoft.VisualBasic.Interaction.InputBox(
+                        "Enter burst time: ", "Burst time for P" + (i + 1), string.Empty, -1, -1);
+                    if (!double.TryParse(burstInput, out burstTimes[i]) || burstTimes[i] < 0)
+                    {
+                        MessageBox.Show("Invalid burst time", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    isCompleted[i] = false;
+                }
+
+                List<CpuSchedulerForm.SchedulingResult> resultsList = new List<CpuSchedulerForm.SchedulingResult>();
+                int currentTime = 0;
+                int completed = 0;
+
+                while (completed < processCount)
+                {
+                    int targetIndex = -1;
+                    double highestRatio = -1.0;
+
+                    for (int i = 0; i < processCount; i++)
+                    {
+                        if (arrivalTimes[i] <= currentTime && !isCompleted[i])
+                        {
+                            double currentWait = currentTime - arrivalTimes[i];
+                            double ratio = (currentWait + burstTimes[i]) / burstTimes[i];
+                            if (ratio > highestRatio)
+                            {
+                                highestRatio = ratio;
+                                targetIndex = i;
+                            }
+                        }
+                    }
+
+                    if (targetIndex == -1)
+                    {
+                        currentTime++;
+                        continue;
+                    }
+
+                    int startTime = currentTime;
+                    currentTime += (int)burstTimes[targetIndex];
+                    isCompleted[targetIndex] = true;
+                    completed++;
+
+                    int turnaround = currentTime - (int)arrivalTimes[targetIndex];
+                    int waiting = turnaround - (int)burstTimes[targetIndex];
+
+                    resultsList.Add(new CpuSchedulerForm.SchedulingResult
+                    {
+                        ProcessID = "P" + (targetIndex + 1),
+                        ArrivalTime = (int)arrivalTimes[targetIndex],
+                        BurstTime = (int)burstTimes[targetIndex],
+                        StartTime = startTime,
+                        FinishTime = currentTime,
+                        WaitingTime = waiting,
+                        TurnaroundTime = turnaround
+                    });
+                }
+
+                var method = targetForm.GetType().GetMethod("DisplaySchedulingResults", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (method != null)
+                {
+                    method.Invoke(targetForm, new object[] { resultsList.OrderBy(r => r.ProcessID).ToList(), "HRRN (Non-Preemptive)" });
+                }
+            }
+        }
+}
 }
 

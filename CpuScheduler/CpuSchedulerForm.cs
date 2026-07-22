@@ -508,18 +508,7 @@ Instructions:
                 listView1.Items.Add(item);
             }
             
-            // Add summary statistics
-            var avgWaiting = results.Average(r => r.WaitingTime);
-            var avgTurnaround = results.Average(r => r.TurnaroundTime);
-            
-            var summaryItem = new ListViewItem("SUMMARY");
-            summaryItem.SubItems.Add(algorithmName);
-            summaryItem.SubItems.Add($"{results.Count} processes");
-            summaryItem.SubItems.Add($"Avg Wait: {avgWaiting:F1}");
-            summaryItem.SubItems.Add($"Avg Turn: {avgTurnaround:F1}");
-            summaryItem.SubItems.Add("");
-            summaryItem.SubItems.Add("");
-            listView1.Items.Add(summaryItem);
+            // Add summary statistics (detailed summary added below)
 
             // TODO: STUDENTS - Add performance metrics calculation and display here
             // Required metrics for your project report:
@@ -536,7 +525,78 @@ Instructions:
             // - Performance metrics summary for each algorithm tested
             // Reference the SaveData_Click() method above to learn CSV file handling
             // This will help you create tables/charts for your project report
+            // 1 & 2. Calculate Average Times
+            var avgWaiting = results.Count > 0 ? results.Average(r => r.WaitingTime) : 0;
+            var avgTurnaround = results.Count > 0 ? results.Average(r => r.TurnaroundTime) : 0;
+
+            // 3 & 4. Calculate CPU Timeline Metrics
+            double totalBurstTime = results.Sum(r => r.BurstTime);
+
+            // Find absolute start and final clock ticks
+            double minArrival = results.Count > 0 ? results.Min(r => r.ArrivalTime) : 0;
+            double maxFinish = results.Count > 0 ? results.Max(r => r.FinishTime) : 0;
+            double totalSimulationTime = maxFinish - minArrival;
+
+            double cpuUtilization = totalSimulationTime > 0 ? (totalBurstTime / totalSimulationTime) * 100.0 : 0;
+            double throughput = totalSimulationTime > 0 ? (double)results.Count / totalSimulationTime : 0;
+
+            // Add a visual spacer line to the list view
+            var blankLine = new ListViewItem("--------------------------------------------------------------------------------------");
+            listView1.Items.Add(blankLine);
+
+            // Row A: Basic Summary Statistics
+            var summaryItem1 = new ListViewItem("SUMMARY");
+            summaryItem1.SubItems.Add(algorithmName);
+            summaryItem1.SubItems.Add($"{results.Count} processes");
+            summaryItem1.SubItems.Add($"Avg Wait: {avgWaiting:F2}");
+            summaryItem1.SubItems.Add($"Avg Turn: {avgTurnaround:F2}");
+            summaryItem1.SubItems.Add("");
+            summaryItem1.SubItems.Add("");
+            listView1.Items.Add(summaryItem1);
+
+            // Row B: Advanced Core Hardware Performance Metrics
+            var summaryItem2 = new ListViewItem("PERFORMANCE");
+            summaryItem2.SubItems.Add($"CPU Util: {cpuUtilization:F1}%");
+            summaryItem2.SubItems.Add($"Throughput: {throughput:F4} p/s");
+            summaryItem2.SubItems.Add($"Total Span: {totalSimulationTime:F1}");
+            summaryItem2.SubItems.Add("");
+            summaryItem2.SubItems.Add("");
+            summaryItem2.SubItems.Add("");
+            listView1.Items.Add(summaryItem2);
+
+            // Store the currently active test data in a class level variable
+            // so our upcoming Export Button can access it instantly.
+            this.Tag = new Tuple<List<SchedulingResult>, string, double, double, double, double>(
+                results, algorithmName, avgWaiting, avgTurnaround, cpuUtilization, throughput);
         }
+        // Helper orchestration bridge to run and display algorithms using your repo format
+private void ExecuteAndDisplayAlgorithm(string algoName)
+{
+    if (!int.TryParse(txtProcess.Text, out int processCount) || processCount <= 0)
+    {
+        MessageBox.Show("Invalid number of processes", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return;
+    }
+
+    DialogResult dialogResult = MessageBox.Show(
+        $"{algoName} Scheduling Simulation",
+        string.Empty,
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Information);
+
+    if (dialogResult == DialogResult.Yes)
+    {
+        if (algoName == "SRTF")
+        {
+            Algorithms.RunSRTF(txtProcess.Text, this);
+        }
+        else if (algoName == "HRRN")
+        {
+            Algorithms.RunHRRN(txtProcess.Text, this);
+        }
+    }
+}
+
 
         /// <summary>
         /// Initializes the process data table structure.
@@ -1294,69 +1354,86 @@ Instructions:
         }
 
 
-    }
-
-    /// <summary>
-    /// STUDENTS: Custom button class with rounded edges for modern UI appearance
-    /// You can use this for your custom algorithm buttons to maintain visual consistency
-    /// </summary>
-    public class RoundedButton : Button
-    {
-        private int borderRadius = 10;
-        private Color borderColor = Color.FromArgb(200, 200, 200);
-
-        public int BorderRadius
+        private void SRTFButton_Click(object sender, EventArgs e)
         {
-            get { return borderRadius; }
-            set { borderRadius = value; Invalidate(); }
+            // Pass both the textbox text value and 'this' form context object pointer
+            Algorithms.RunSRTF(txtProcess.Text, this);
         }
 
-        public Color BorderColor
+        private void HRRNButton_Click(object sender, EventArgs e)
         {
-            get { return borderColor; }
-            set { borderColor = value; Invalidate(); }
+            Algorithms.RunHRRN(txtProcess.Text, this);
         }
 
-        protected override void OnPaint(PaintEventArgs pevent)
+        /// <summary>
+        /// Handles exporting the visible ListView dataset and performance aggregates to a CSV file.
+        /// </summary>
+        private void btnExportResults_Click(object sender, EventArgs e)
         {
-            Graphics g = pevent.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-            // Create rounded rectangle path
-            GraphicsPath path = new GraphicsPath();
-            Rectangle rect = new Rectangle(0, 0, Width - 1, Height - 1);
-            path.AddArc(rect.X, rect.Y, borderRadius, borderRadius, 180, 90);
-            path.AddArc(rect.X + rect.Width - borderRadius, rect.Y, borderRadius, borderRadius, 270, 90);
-            path.AddArc(rect.X + rect.Width - borderRadius, rect.Y + rect.Height - borderRadius, borderRadius, borderRadius, 0, 90);
-            path.AddArc(rect.X, rect.Y + rect.Height - borderRadius, borderRadius, borderRadius, 90, 90);
-            path.CloseAllFigures();
-
-            // Set button region to rounded shape
-            Region = new Region(path);
-
-            // Fill background
-            using (SolidBrush brush = new SolidBrush(BackColor))
+            // Verify if there is simulation data available to export
+            if (this.Tag == null)
             {
-                g.FillPath(brush, path);
+                MessageBox.Show("No simulation data is currently available to export. Run an algorithm first.", 
+                    "Export Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            // Draw border
-            using (Pen pen = new Pen(borderColor, 1))
+            // Unpack data from the runtime session storage tuple
+            var dataTuple = this.Tag as Tuple<List<SchedulingResult>, string, double, double, double, double>;
+            var results = dataTuple.Item1;
+            string algorithmName = dataTuple.Item2;
+            double avgWait = dataTuple.Item3;
+            double avgTurn = dataTuple.Item4;
+            double cpuUtil = dataTuple.Item5;
+            double throughput = dataTuple.Item6;
+
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
-                g.DrawPath(pen, path);
+                saveFileDialog.Filter = "CSV Data File (*.csv)|*.csv";
+                saveFileDialog.Title = "Save Scheduling Benchmark Results";
+                saveFileDialog.FileName = $"{algorithmName.Replace(" ", "_")}_Performance_Report.csv";
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        using (System.IO.StreamWriter writer = new System.IO.StreamWriter(saveFileDialog.FileName))
+                        {
+                            // Write structured file title header metadata
+                            writer.WriteLine($"CPU SCHEDULER SIMULATION REPORT - {algorithmName.ToUpper()}");
+                            writer.WriteLine($"Timestamp, {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}");
+                            writer.WriteLine();
+
+                            // 1. Write the core data table rows
+                            writer.WriteLine("Process ID,Arrival Time,Burst Time,Start Time,Finish Time,Waiting Time,Turnaround Time");
+                            foreach (var r in results)
+                            {
+                                writer.WriteLine($"{r.ProcessID},{r.ArrivalTime},{r.BurstTime},{r.StartTime},{r.FinishTime},{r.WaitingTime},{r.TurnaroundTime}");
+                            }
+                            writer.WriteLine();
+
+                            // 2. Write the analytical assignment summary metrics summary row blocks
+                            writer.WriteLine("METRIC ANALYSIS SUMMARY,VALUE");
+                            writer.WriteLine($"Target Test Algorithm,{algorithmName}");
+                            writer.WriteLine($"Total Completed Workload Slices,{results.Count}");
+                            writer.WriteLine($"Average Waiting Time (AWT),{avgWait:F4}");
+                            writer.WriteLine($"Average Turnaround Time (ATT),{avgTurn:F4}");
+                            writer.WriteLine($"System Core Utilization (%),{cpuUtil:F2}%");
+                            writer.WriteLine($"Processor Execution Throughput (proc/sec),{throughput:F6}");
+                        }
+
+                        MessageBox.Show("Simulation benchmarks successfully saved to CSV storage format!", 
+                            "Export Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Failed writing data data to localized destination folder track: {ex.Message}", 
+                            "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             }
-
-            // Draw text
-            TextRenderer.DrawText(g, Text, Font, ClientRectangle, ForeColor, 
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-
-            path.Dispose();
         }
 
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-            Invalidate();
-        }
     }
+
 }

@@ -443,6 +443,62 @@
             this.btnRoundRobin.Text = "ROUND ROBIN";
             this.btnRoundRobin.UseVisualStyleBackColor = false;
             this.btnRoundRobin.Click += new System.EventHandler(this.RoundRobinButton_Click);
+
+            // SRTF BUTTON
+            this.btnSRTF = new RoundedButton();
+            this.btnSRTF.Enabled = true;
+            this.btnSRTF.BackColor = System.Drawing.Color.LightCyan;
+            ((RoundedButton)this.btnSRTF).BorderRadius = 10;
+            ((RoundedButton)this.btnSRTF).BorderColor = System.Drawing.Color.FromArgb(200, 200, 200);
+            this.btnSRTF.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSRTF.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSRTF.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSRTF.Margin = new System.Windows.Forms.Padding(10, 5, 10, 5);
+            this.btnSRTF.Name = "btnSRTF";
+            this.btnSRTF.Size = new System.Drawing.Size(140, 50);
+            this.btnSRTF.TabIndex = 13;
+            this.btnSRTF.Text = "SRTF";
+            this.btnSRTF.UseVisualStyleBackColor = false;
+            this.btnSRTF.Click += new System.EventHandler(this.SRTFButton_Click);
+
+            // HRRN BUTTON
+            this.btnHRRN = new RoundedButton();
+            this.btnHRRN.Enabled = true;
+            this.btnHRRN.BackColor = System.Drawing.Color.MistyRose;
+            ((RoundedButton)this.btnHRRN).BorderRadius = 10;
+            ((RoundedButton)this.btnHRRN).BorderColor = System.Drawing.Color.FromArgb(200, 200, 200);
+            this.btnHRRN.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnHRRN.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnHRRN.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnHRRN.Margin = new System.Windows.Forms.Padding(10, 5, 10, 5);
+            this.btnHRRN.Name = "btnHRRN";
+            this.btnHRRN.Size = new System.Drawing.Size(140, 50);
+            this.btnHRRN.TabIndex = 14;
+            this.btnHRRN.Text = "HRRN";
+            this.btnHRRN.UseVisualStyleBackColor = false;
+            this.btnHRRN.Click += new System.EventHandler(this.HRRNButton_Click);
+
+            // Add the new SRTF and HRRN buttons into the FlowLayoutPanel after they are created
+            this.algorithmButtonPanel.Controls.Add(this.btnSRTF);
+            this.algorithmButtonPanel.Controls.Add(this.btnHRRN);
+
+
+            this.btnExportResults = new RoundedButton(); // Uses the rounded button class
+            this.btnExportResults.BackColor = System.Drawing.Color.LightGreen;
+            ((RoundedButton)this.btnExportResults).BorderRadius = 10;
+            this.btnExportResults.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnExportResults.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExportResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold);
+            this.btnExportResults.Location = new System.Drawing.Point(20, 400); // Position it cleanly right above the algorithm button panel
+            this.btnExportResults.Name = "btnExportResults";
+            this.btnExportResults.Size = new System.Drawing.Size(150, 35);
+            this.btnExportResults.Text = "📤 Export Results";
+            this.btnExportResults.Click += new System.EventHandler(this.btnExportResults_Click);
+
+            // Make sure to add it to your main form controls array list
+            this.Controls.Add(this.btnExportResults);
+
+
             // 
             // restartApp
             // 
@@ -610,6 +666,9 @@
         private System.Windows.Forms.Label labelProcess;
         private System.Windows.Forms.Panel sidePanel;
         private System.Windows.Forms.Button btnRoundRobin;
+        private System.Windows.Forms.Button btnSRTF;
+        private System.Windows.Forms.Button btnHRRN;
+        private System.Windows.Forms.Button btnExportResults;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Panel aboutPanel;
         private System.Windows.Forms.RichTextBox aboutTextBox;
