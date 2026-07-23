@@ -103,31 +103,7 @@ This section explains only the steps needed to build the project and exercise th
 
 5. Results appear in the "Results" tab. Use the Export Results button to save CSV output.
 
-Notes on automation
-- No unit tests were found in the repository. I ran the test discovery for the CpuScheduler project and there are no test projects. If you would like automated tests, I can add an xUnit project and test cases for SRTF/HRRN.
-## Tools (analysis and tests)
 
-We provide optional tools for reproducing performance analysis and running unit tests. These live under the tools/ folder and are intended for instructors or for you to re-run experiments.
-
-1. Run the simulator runner (generates CSVs and PNG charts):
-
-   dotnet build tools/SimulatorRunner/SimulatorRunner.csproj -c Release
-   dotnet run --project tools/SimulatorRunner/SimulatorRunner.csproj -c Release
-
-	  Output will be produced in the outputs/simulation_output/ directory: per-run CSVs, aggregated summary CSVs, PNG charts, and outputs/simulation_output/report_data.tex.
-
-2. Run unit tests (xUnit):
-
-   dotnet test tools/UnitTests/UnitTests.csproj
-
-Notes:
-- The tools reference the CpuScheduler project, so they target net8.0-windows. Ensure you run them on Windows with the .NET 8 SDK installed.
-- Generated outputs and archives are organized under the outputs/ folder:
-  - outputs/simulation_output/  (CSV and PNG chart outputs and report_data.tex)
-  - outputs/archives/          (submission ZIPs created by the packaging script)
-- Documentation and report source live in docs/ (report.tex, presentation RTF, summaries).
-- The packaging script is at tools/scripts/create_package.ps1 and will create submission_ready/ and optional ZIP archives.
-- Keep tools/ if you want reproducible experiments and an automated verification suite. Remove or exclude tools/ for a minimal submission package.
 ## Usage
 
 1. Enter the desired number of processes
